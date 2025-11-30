@@ -1,40 +1,36 @@
-# app/utils.py
 import requests
-import imghdr
-import io
+from PIL import Image
+from io import BytesIO
 
-class DownloadError(Exception):
-    pass
 
-def download_file_bytes(url: str, timeout: int = 30) -> bytes:
+def download_file_bytes(url: str) -> bytes:
     """
-    Download a file from a URL and return its bytes.
-    Raises DownloadError on failure.
+    Download a file (PDF or Image) from a URL and return bytes.
     """
-    headers = {
-        "User-Agent": "bill-extractor/1.0"
-    }
+    response = requests.get(url, timeout=20)
+    response.raise_for_status()
+    return response.content
+
+
+def is_image_file(file_bytes: bytes) -> bool:
+    """
+    Detect whether downloaded bytes represent an image.
+    Uses Pillow, works in Python 3.10–3.13+
+    """
     try:
-        r = requests.get(url, headers=headers, timeout=timeout)
-        r.raise_for_status()
-    except requests.RequestException as e:
-        raise DownloadError(f"Failed to download file: {e}")
-    content = r.content
-    if not content:
-        raise DownloadError("Downloaded file is empty")
-    return content
+        Image.open(BytesIO(file_bytes))
+        return True
+    except Exception:
+        return False
 
-def detect_file_type_from_bytes(b: bytes) -> str:
-    """
-    Return 'pdf' or 'image' or 'unknown'
-    """
-    if len(b) >= 4 and b[:4] == b'%PDF':
-        return "pdf"
-    img_type = imghdr.what(None, h=b)
-    if img_type:
-        return "image"
-    return "unknown"
 
-def save_bytes_to_file(b: bytes, path: str):
-    with open(path, "wb") as f:
-        f.write(b)
+def save_temp_file(file_bytes: bytes, filename: str) -> str:
+    """
+    Save downloaded file bytes to a temporary file.
+    Used for OCR / PDF processing.
+    """
+    import os
+    temp_path = f"/tmp/{filename}"
+    with open(temp_path, "wb") as f:
+        f.write(file_bytes)
+    return temp_path

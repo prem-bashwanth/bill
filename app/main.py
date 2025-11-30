@@ -2,7 +2,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Any
-from app.utils import download_file_bytes
+from app.utils import download_file_bytes, is_image_file, save_temp_file
+
 from app.ocr import get_images_from_bytes, preprocess_image, ocr_words
 from app.lineitem_extractor import extract_items_from_page
 from app.reconcile import compute_final_total, find_totals_in_text
