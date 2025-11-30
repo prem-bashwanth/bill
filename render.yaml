@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: bill-extractor-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    plan: starter
