@@ -1,0 +1,4 @@
+tesseract-ocr
+poppler-utils
+libtiff5
+libjpeg62-turbo
